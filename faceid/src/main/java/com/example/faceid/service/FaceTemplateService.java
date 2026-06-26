@@ -21,12 +21,16 @@ public class FaceTemplateService {
     }
 
     /**
-     * Взима fingerprint от локалната снимка и го записва в БД.
-     * @param personName име на човека (може да е null)
+     * Взима fingerprint от локалната снимка (defaultImagePath) и го записва в БД.
+     * Ако FaceDetectionService хвърли Exception, го обръщаме в RuntimeException.
      */
-    public FaceTemplate createTemplateFromSavedImage(String personName) throws IOException {
-        // Взимаме JSON от FaceDetectionService
-        JsonNode fingerprintJson = faceDetectionService.getFirstFaceFingerprint();
+    public FaceTemplate createTemplateFromSavedImage(String personName) {
+        JsonNode fingerprintJson;
+        try {
+            fingerprintJson = faceDetectionService.getFirstFaceFingerprint();
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting face fingerprint from model", e);
+        }
 
         boolean hasFace = fingerprintJson.path("hasFace").asBoolean(false);
         if (!hasFace) {
@@ -38,10 +42,9 @@ public class FaceTemplateService {
             throw new IllegalStateException("Face ID липсва в отговора.");
         }
 
-        // Проверка дали вече имаме такъв faceId в БД
+        // Проверка дали вече имаме такъв faceId
         Optional<FaceTemplate> existing = faceTemplateRepository.findByFaceId(faceId);
         if (existing.isPresent()) {
-            // Можеш или да върнеш съществуващия, или да хвърлиш грешка
             return existing.get();
         }
 
