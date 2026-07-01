@@ -10,25 +10,26 @@ public class FaceTemplate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // по желание – име на човека, към когото е вързан fingerprint-а
+    // Име на човека, към когото е вързан този fingerprint (по избор)
     private String personName;
 
-    // fingerprint от Face API (например faceId)
-    @Column(nullable = false, unique = true)
-    private String faceId;
+    // Fingerprint (масивът от числа), пазен като JSON текст
+    @Lob
+    @Column(nullable = false)
+    private String fingerprintJson;
 
     private LocalDateTime createdAt;
 
     public FaceTemplate() {
     }
 
-    public FaceTemplate(String personName, String faceId) {
+    public FaceTemplate(String personName, String fingerprintJson) {
         this.personName = personName;
-        this.faceId = faceId;
+        this.fingerprintJson = fingerprintJson;
         this.createdAt = LocalDateTime.now();
     }
 
-    // getters и setters
+    // Getters / setters
 
     public Long getId() {
         return id;
@@ -42,12 +43,12 @@ public class FaceTemplate {
         this.personName = personName;
     }
 
-    public String getFaceId() {
-        return faceId;
+    public String getFingerprintJson() {
+        return fingerprintJson;
     }
 
-    public void setFaceId(String faceId) {
-        this.faceId = faceId;
+    public void setFingerprintJson(String fingerprintJson) {
+        this.fingerprintJson = fingerprintJson;
     }
 
     public LocalDateTime getCreatedAt() {

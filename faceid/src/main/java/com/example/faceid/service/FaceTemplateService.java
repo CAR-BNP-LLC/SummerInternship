@@ -5,9 +5,6 @@ import com.example.faceid.repository.FaceTemplateRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.Optional;
-
 @Service
 public class FaceTemplateService {
 
@@ -20,35 +17,32 @@ public class FaceTemplateService {
         this.faceTemplateRepository = faceTemplateRepository;
     }
 
-    /**
-     * Взима fingerprint от локалната снимка (defaultImagePath) и го записва в БД.
-     * Ако FaceDetectionService хвърли Exception, го обръщаме в RuntimeException.
-     */
     public FaceTemplate createTemplateFromSavedImage(String personName) {
-        JsonNode fingerprintJson;
+        // 1) Взимаме JSON от модела
+        JsonNode result;
         try {
-            fingerprintJson = faceDetectionService.getFirstFaceFingerprint();
+            result = faceDetectionService.getFirstFaceFingerprint();
         } catch (Exception e) {
             throw new RuntimeException("Error getting face fingerprint from model", e);
         }
 
-        boolean hasFace = fingerprintJson.path("hasFace").asBoolean(false);
+        // 2) Проверяваме има ли лице
+        boolean hasFace = result.path("hasFace").asBoolean(false);
         if (!hasFace) {
             throw new IllegalStateException("Не е открито лице в снимката.");
         }
 
-        String faceId = fingerprintJson.path("faceId").asText(null);
-        if (faceId == null) {
-            throw new IllegalStateException("Face ID липсва в отговора.");
+        // 3) Взимаме fingerprint масива
+        JsonNode fingerprintNode = result.path("fingerprint");
+        if (fingerprintNode.isMissingNode() || !fingerprintNode.isArray()) {
+            throw new IllegalStateException("Fingerprint липсва или не е масив в отговора.");
         }
 
-        // Проверка дали вече имаме такъв faceId
-        Optional<FaceTemplate> existing = faceTemplateRepository.findByFaceId(faceId);
-        if (existing.isPresent()) {
-            return existing.get();
-        }
+        // 4) Сериализираме fingerprint масива до String (JSON текст)
+        String fingerprintJsonString = fingerprintNode.toString();
 
-        FaceTemplate template = new FaceTemplate(personName, faceId);
+        // 5) Създаваме и записваме шаблон
+        FaceTemplate template = new FaceTemplate(personName, fingerprintJsonString);
         return faceTemplateRepository.save(template);
     }
 }

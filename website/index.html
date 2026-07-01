@@ -1,81 +1,338 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>website</title>
-  </head>
-  
-  <body>
-    <div id="login-container" style="border: 1px solid #ccc; padding: 16px; max-width: 300px; margin: 16px;">
-  <h2>Login</h2>
-  <form id="login-form">
-    <div style="margin-bottom: 8px;">
-      <label for="login-username">Username:</label><br />
-      <input type="text" id="login-username" name="username" required />
-    </div>
-    <div style="margin-bottom: 8px;">
-      <label for="login-password">Password:</label><br />
-      <input type="password" id="login-password" name="password" required />
-    </div>
-    <button type="submit">Login</button>
-  </form>
-  <p id="login-message" style="margin-top: 10px; color: #333;"></p>
-</div>
-<script>
-  // Функция за обработка на login формата
-  document.addEventListener('DOMContentLoaded', function () {
-    const loginForm = document.getElementById('login-form');
-    const loginMessage = document.getElementById('login-message');
+<head>
+  <meta charset="UTF-8" />
+  <title>Face ID Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    if (!loginForm) {
-      return;
+  <style>
+    /* Основен фон */
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #111827, #000000);
+      color: #f9fafb;
     }
 
-    loginForm.addEventListener('submit', async function (e) {
-      e.preventDefault(); // спираме стандартното изпращане на формата
+    /* Wrapper за цялата страница (можеш да добавиш и други секции по-късно) */
+    .page-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-      const username = document.getElementById('login-username').value.trim();
-      const password = document.getElementById('login-password').value.trim();
+    /* Wrapper за auth панела */
+    .auth-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      width: 100%;
+    }
 
-      if (!username || !password) {
-        loginMessage.textContent = 'Моля, въведи име и парола.';
-        loginMessage.style.color = 'red';
-        return;
+    /* Картата за login/register */
+    .auth-card {
+      width: 360px;
+      background: rgba(15, 23, 42, 0.9); /* тъмно, леко прозрачно */
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Tabs горе: Login / Register */
+    .auth-tabs {
+      display: flex;
+      background: linear-gradient(90deg, #0f172a, #020617);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 12px 0;
+      background: transparent;
+      border: none;
+      color: #9ca3af;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      color: #e5e7eb;
+      border-bottom: 2px solid #38bdf8;
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    /* Форми */
+    .auth-forms {
+      padding: 20px 24px 24px;
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .auth-form.hidden {
+      display: none;
+    }
+
+    .auth-form h2 {
+      margin: 0 0 16px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    /* Полета */
+    .auth-field {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+    }
+
+    .auth-field label {
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: #9ca3af;
+    }
+
+    .auth-field input {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #4b5563;
+      background-color: #020617;
+      color: #f9fafb;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .auth-field input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px #38bdf8;
+    }
+
+    /* Бутони */
+    .auth-button {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 0;
+      margin-top: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+    }
+
+    .auth-button.primary {
+      background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      color: #0f172a;
+      box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
+    }
+
+    .auth-button.secondary {
+      background: #1f2937;
+      color: #e5e7eb;
+      border: 1px solid #4b5563;
+    }
+
+    .auth-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .auth-button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    /* Съобщения */
+    .auth-message {
+      min-height: 18px;
+      margin-top: 6px;
+      font-size: 0.85rem;
+    }
+
+    .auth-message.success {
+      color: #22c55e;
+    }
+
+    .auth-message.error {
+      color: #f97316;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="auth-wrapper">
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button id="tab-login" class="auth-tab active">Login</button>
+          <button id="tab-register" class="auth-tab">Register</button>
+        </div>
+
+        <div class="auth-forms">
+          <!-- LOGIN FORM -->
+          <form id="login-form" class="auth-form">
+            <h2>Welcome back</h2>
+            <div class="auth-field">
+              <label for="login-username">Username</label>
+              <input type="text" id="login-username" name="username" required />
+            </div>
+            <div class="auth-field">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" name="password" required />
+            </div>
+            <button type="submit" class="auth-button primary">Login</button>
+            <p id="login-message" class="auth-message"></p>
+          </form>
+
+          <!-- REGISTER FORM -->
+          <form id="register-form" class="auth-form hidden">
+            <h2>Create account</h2>
+            <div class="auth-field">
+              <label for="register-username">Username</label>
+              <input type="text" id="register-username" name="username" required />
+            </div>
+            <div class="auth-field">
+              <label for="register-password">Password</label>
+              <input type="password" id="register-password" name="password" required />
+            </div>
+            <div class="auth-field">
+              <label for="register-role">Role (optional)</label>
+              <input type="text" id="register-role" name="role" placeholder="USER" />
+            </div>
+            <button type="submit" class="auth-button secondary">Register</button>
+            <p id="register-message" class="auth-message"></p>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Tabs
+      const tabLogin = document.getElementById('tab-login');
+      const tabRegister = document.getElementById('tab-register');
+      const loginForm = document.getElementById('login-form');
+      const registerForm = document.getElementById('register-form');
+
+      function showLogin() {
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
       }
 
-      try {
-        const response = await fetch('http://localhost:8080/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username, password })
+      function showRegister() {
+        tabRegister.classList.add('active');
+        tabLogin.classList.remove('active');
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      }
+
+      if (tabLogin && tabRegister && loginForm && registerForm) {
+        tabLogin.addEventListener('click', showLogin);
+        tabRegister.addEventListener('click', showRegister);
+      }
+
+      // LOGIN логика
+      const loginMessage = document.getElementById('login-message');
+
+      if (loginForm) {
+        loginForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const username = document.getElementById('login-username').value.trim();
+          const password = document.getElementById('login-password').value.trim();
+
+          if (!username || !password) {
+            loginMessage.textContent = 'Моля, въведи име и парола.';
+            loginMessage.className = 'auth-message error';
+            return;
+          }
+
+          try {
+            const response = await fetch('http://localhost:8080/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+              loginMessage.textContent = data.error || 'Грешно потребителско име или парола.';
+              loginMessage.className = 'auth-message error';
+              return;
+            }
+
+            loginMessage.textContent = data.message || 'Успешен вход.';
+            loginMessage.className = 'auth-message success';
+
+            // по желание – пазим user в localStorage
+            // localStorage.setItem('user', JSON.stringify(data));
+
+          } catch (err) {
+            loginMessage.textContent = 'Грешка при връзка със сървъра: ' + err.message;
+            loginMessage.className = 'auth-message error';
+          }
         });
+      }
 
-        const data = await response.json().catch(() => ({}));
+      // REGISTER логика
+      const registerMessage = document.getElementById('register-message');
 
-        if (!response.ok) {
-          // грешка при login (напр. 401)
-          loginMessage.textContent = data.error || 'Грешно потребителско име или парола.';
-          loginMessage.style.color = 'red';
-          return;
-        }
+      if (registerForm) {
+        registerForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
 
-        // успешен login
-        loginMessage.textContent = data.message || 'Успешен вход.';
-        loginMessage.style.color = 'green';
+          const username = document.getElementById('register-username').value.trim();
+          const password = document.getElementById('register-password').value.trim();
+          const role = document.getElementById('register-role').value.trim() || 'USER';
 
-        // по желание – пазим потребителя в localStorage
-        // localStorage.setItem('user', JSON.stringify(data));
+          if (!username || !password) {
+            registerMessage.textContent = 'Моля, въведи име и парола.';
+            registerMessage.className = 'auth-message error';
+            return;
+          }
 
-      } catch (err) {
-        loginMessage.textContent = 'Грешка при връзка със сървъра: ' + err.message;
-        loginMessage.style.color = 'red';
+          try {
+            const response = await fetch('http://localhost:8080/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, password, role })
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+              registerMessage.textContent = data.error || 'Грешка при регистрация.';
+              registerMessage.className = 'auth-message error';
+              return;
+            }
+
+            registerMessage.textContent = data.message || 'Успешна регистрация.';
+            registerMessage.className = 'auth-message success';
+
+            // автоматично превключване към Login след успешна регистрация
+            setTimeout(() => {
+              showLogin();
+              loginMessage.textContent = 'Регистрацията успешна – влез с новия акаунт.';
+              loginMessage.className = 'auth-message success';
+            }, 1000);
+
+          } catch (err) {
+            registerMessage.textContent = 'Грешка при връзка със сървъра: ' + err.message;
+            registerMessage.className = 'auth-message error';
+          }
+        });
       }
     });
-  });
-</script>
+  </script>
 </body>
 </html>
