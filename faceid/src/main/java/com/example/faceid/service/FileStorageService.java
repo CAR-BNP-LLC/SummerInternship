@@ -36,7 +36,6 @@ public class FileStorageService {
         return storedFileName;
     }
 
-    // ТОВА Е важният метод:
     public Path getFilePath(String fileName) {
         return uploadDir.resolve(fileName).toAbsolutePath().normalize();
     }

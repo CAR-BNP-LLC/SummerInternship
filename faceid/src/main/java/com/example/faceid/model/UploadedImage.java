@@ -10,8 +10,8 @@ public class UploadedImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String fileName;      // името в uploads/ (напр. 1720..._test.jpg)
-    private String originalName;  // оригиналното име (test.jpg)
+    private String fileName;      // име в uploads/
+    private String originalName;  // оригинално име
     private LocalDateTime uploadedAt;
 
     public UploadedImage() {
@@ -22,8 +22,6 @@ public class UploadedImage {
         this.originalName = originalName;
         this.uploadedAt = LocalDateTime.now();
     }
-
-    // getters/setters
 
     public Long getId() {
         return id;

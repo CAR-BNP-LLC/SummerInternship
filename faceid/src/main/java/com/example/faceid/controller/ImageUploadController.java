@@ -24,10 +24,6 @@ public class ImageUploadController {
         this.uploadedImageService = uploadedImageService;
     }
 
-    /**
-     * POST /api/images/upload
-     * Body: form-data, key = "file", type = File
-     */
     @PostMapping("/upload")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
@@ -53,10 +49,6 @@ public class ImageUploadController {
         }
     }
 
-    /**
-     * GET /api/images/recent
-     * Връща всички качени снимки, подредени по uploadedAt (най-новите първи).
-     */
     @GetMapping("/recent")
     public ResponseEntity<List<UploadedImage>> getRecentImages() {
         List<UploadedImage> images = uploadedImageService.getAllImagesOrdered();

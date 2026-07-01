@@ -12,10 +12,10 @@ import org.springframework.web.client.RestTemplate;
 public class FaceDetectionService {
 
     @Value("${face.model.url}")
-    private String modelUrl; // напр. http://localhost:5000/detect-local-image
+    private String modelUrl; // http://localhost:5000/detect-local-image
 
     @Value("${face.image.path}")
-    private String defaultImagePath; // напр. images/person1.jpg
+    private String defaultImagePath; // images/person1.jpg
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -25,34 +25,25 @@ public class FaceDetectionService {
         this.objectMapper = new ObjectMapper();
     }
 
-    // За да видим реалната стойност на modelUrl при старт
     @PostConstruct
     public void init() {
         System.out.println("modelUrl from properties: [" + modelUrl + "]");
         System.out.println("defaultImagePath from properties: [" + defaultImagePath + "]");
     }
 
-    /**
-     * Вика локалния Python модел (face_server.py) с произволен път до изображение.
-     * Изпраща JSON: {"imagePath": "<imagePath>"}
-     * Връща JSON отговора от Python-а като JsonNode.
-     */
     public JsonNode detectOnPath(String imagePath) {
         try {
-            // 1) Подготвяме JSON body
             JsonNode requestBody = objectMapper.createObjectNode()
                     .put("imagePath", imagePath);
 
             String jsonBody = objectMapper.writeValueAsString(requestBody);
             System.out.println("Sending to model (" + modelUrl + "): " + jsonBody);
 
-            // 2) Заглавки
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
 
-            // 3) Заявка към Python
             ResponseEntity<String> response = restTemplate.exchange(
                     modelUrl,
                     HttpMethod.POST,
@@ -63,14 +54,12 @@ public class FaceDetectionService {
             System.out.println("Model response status: " + response.getStatusCode());
             System.out.println("Model response body: " + response.getBody());
 
-            // 4) Проверка на статуса
             if (response.getStatusCode() != HttpStatus.OK) {
                 throw new RuntimeException(
                         "Face model error: " + response.getStatusCode() + " - " + response.getBody()
                 );
             }
 
-            // 5) Парсваме JSON
             return objectMapper.readTree(response.getBody());
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,9 +67,6 @@ public class FaceDetectionService {
         }
     }
 
-    /**
-     * Вика модела с defaultImagePath (images/person1.jpg).
-     */
     public JsonNode getFirstFaceFingerprint() {
         return detectOnPath(defaultImagePath);
     }

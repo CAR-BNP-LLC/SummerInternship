@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface UploadedImageRepository extends JpaRepository<UploadedImage, Long> {
 
-    // всички снимки, подредени по дата на качване (последните първи)
     List<UploadedImage> findAllByOrderByUploadedAtDesc();
 }

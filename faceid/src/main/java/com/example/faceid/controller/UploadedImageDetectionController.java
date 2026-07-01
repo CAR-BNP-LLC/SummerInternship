@@ -22,26 +22,14 @@ public class UploadedImageDetectionController {
         this.fileStorageService = fileStorageService;
     }
 
-    /**
-     * POST /api/face/detect-uploaded?fileName=....
-     *
-     * fileName е това, което ти връща /api/images/upload (например 16877917_test.jpg).
-     * Endpoint-ът ще:
-     *  1) конструира пълния път до файла (в uploads/)
-     *  2) ще извика Python модела с този път
-     *  3) ще върне JSON с hasFace, faceRectangle, fingerprint
-     */
     @PostMapping("/detect-uploaded")
     public ResponseEntity<?> detectOnUploaded(@RequestParam String fileName) {
         try {
-            // 1) Пълен път до файла в uploads/
             Path filePath = fileStorageService.getFilePath(fileName);
-
-            // 2) Викаме Python модела с този път
             JsonNode result = faceDetectionService.detectOnPath(filePath.toString());
-
             return ResponseEntity.ok(result);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity
                     .status(500)
                     .body("Error detecting face on uploaded image: " + e.getMessage());

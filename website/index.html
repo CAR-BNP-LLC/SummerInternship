@@ -14,7 +14,6 @@
       color: #f9fafb;
     }
 
-    /* Wrapper за цялата страница (можеш да добавиш и други секции по-късно) */
     .page-wrapper {
       min-height: 100vh;
       display: flex;
@@ -22,19 +21,21 @@
       justify-content: center;
     }
 
-    /* Wrapper за auth панела */
-    .auth-wrapper {
+    .layout {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      gap: 32px;
       padding: 24px;
+      max-width: 1100px;
       width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
-    /* Картата за login/register */
+    /* ==== AUTH CARD (LOGIN + REGISTER) ==== */
+
     .auth-card {
       width: 360px;
-      background: rgba(15, 23, 42, 0.9); /* тъмно, леко прозрачно */
+      background: rgba(15, 23, 42, 0.9);
       border-radius: 16px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
       border: 1px solid rgba(148, 163, 184, 0.3);
@@ -42,7 +43,6 @@
       backdrop-filter: blur(10px);
     }
 
-    /* Tabs горе: Login / Register */
     .auth-tabs {
       display: flex;
       background: linear-gradient(90deg, #0f172a, #020617);
@@ -66,7 +66,6 @@
       background: rgba(15, 23, 42, 0.9);
     }
 
-    /* Форми */
     .auth-forms {
       padding: 20px 24px 24px;
     }
@@ -87,7 +86,6 @@
       color: #e5e7eb;
     }
 
-    /* Полета */
     .auth-field {
       display: flex;
       flex-direction: column;
@@ -115,7 +113,6 @@
       box-shadow: 0 0 0 1px #38bdf8;
     }
 
-    /* Бутони */
     .auth-button {
       border: none;
       border-radius: 999px;
@@ -148,7 +145,6 @@
       box-shadow: none;
     }
 
-    /* Съобщения */
     .auth-message {
       min-height: 18px;
       margin-top: 6px;
@@ -162,12 +158,110 @@
     .auth-message.error {
       color: #f97316;
     }
+
+    /* ==== UPLOAD + DETECTION CARD ==== */
+
+    .panel-card {
+      width: 420px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      padding: 20px 24px 24px;
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+
+    .panel-card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 18px;
+      background: conic-gradient(
+        from 180deg,
+        rgba(56, 189, 248, 0.4),
+        rgba(45, 212, 191, 0.3),
+        transparent,
+        rgba(56, 189, 248, 0.4)
+      );
+      opacity: 0.2;
+      z-index: -1;
+    }
+
+    .panel-title {
+      margin: 0 0 16px;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .panel-subtitle {
+      margin: 0 0 16px;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+
+    .upload-area {
+      border: 1px dashed #4b5563;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.7);
+      margin-bottom: 16px;
+    }
+
+    .upload-area input[type="file"] {
+      margin-top: 8px;
+    }
+
+    .panel-button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #38bdf8, #22c55e);
+      color: #0f172a;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .panel-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .panel-button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .result-section {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: #e5e7eb;
+    }
+
+    .result-section pre {
+      background: #020617;
+      padding: 8px;
+      border-radius: 8px;
+      max-height: 200px;
+      overflow: auto;
+      font-size: 0.8rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
   <div class="page-wrapper">
-    <div class="auth-wrapper">
+    <div class="layout">
 
+      <!-- AUTH CARD -->
       <div class="auth-card">
         <div class="auth-tabs">
           <button id="tab-login" class="auth-tab active">Login</button>
@@ -211,12 +305,32 @@
         </div>
       </div>
 
+      <!-- UPLOAD + DETECT CARD -->
+      <div id="upload-detect-card" class="panel-card hidden">
+        <h2 class="panel-title">Face Detection</h2>
+        <p class="panel-subtitle">
+          Качи снимка от компютъра си. Сървърът ще я запази и локалният модел ще провери дали има лице.
+        </p>
+
+        <div class="upload-area">
+          <div>Избери файл (снимка):</div>
+          <input type="file" id="upload-file-input" accept="image/*" />
+          <button id="upload-analyze-btn" class="panel-button">Качи и анализирай</button>
+          <p id="upload-message" class="auth-message"></p>
+        </div>
+
+        <div class="result-section">
+          <div id="detect-summary"></div>
+          <pre id="detect-raw-json"></pre>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // Tabs
+      // ===== Tabs =====
       const tabLogin = document.getElementById('tab-login');
       const tabRegister = document.getElementById('tab-register');
       const loginForm = document.getElementById('login-form');
@@ -241,8 +355,29 @@
         tabRegister.addEventListener('click', showRegister);
       }
 
-      // LOGIN логика
+      // ===== LOGIN & AUTH STATE =====
       const loginMessage = document.getElementById('login-message');
+      const uploadDetectCard = document.getElementById('upload-detect-card');
+      const authCard = document.querySelector('.auth-card');
+
+      let isLoggedIn = false;
+
+      function onAuthSuccess(message) {
+        isLoggedIn = true;
+
+        if (uploadDetectCard) {
+          uploadDetectCard.classList.remove('hidden');
+        }
+
+        if (authCard) {
+          authCard.classList.add('hidden');
+        }
+
+        if (loginMessage) {
+          loginMessage.textContent = message || 'Успешен вход.';
+          loginMessage.className = 'auth-message success';
+        }
+      }
 
       if (loginForm) {
         loginForm.addEventListener('submit', async function (e) {
@@ -271,11 +406,7 @@
               return;
             }
 
-            loginMessage.textContent = data.message || 'Успешен вход.';
-            loginMessage.className = 'auth-message success';
-
-            // по желание – пазим user в localStorage
-            // localStorage.setItem('user', JSON.stringify(data));
+            onAuthSuccess(data.message || 'Успешен вход.');
 
           } catch (err) {
             loginMessage.textContent = 'Грешка при връзка със сървъра: ' + err.message;
@@ -284,7 +415,7 @@
         });
       }
 
-      // REGISTER логика
+      // ===== REGISTER =====
       const registerMessage = document.getElementById('register-message');
 
       if (registerForm) {
@@ -319,17 +450,106 @@
             registerMessage.textContent = data.message || 'Успешна регистрация.';
             registerMessage.className = 'auth-message success';
 
-            // автоматично превключване към Login след успешна регистрация
             setTimeout(() => {
               showLogin();
-              loginMessage.textContent = 'Регистрацията успешна – влез с новия акаунт.';
-              loginMessage.className = 'auth-message success';
+              onAuthSuccess('Регистрация успешна – влезе автоматично.');
             }, 1000);
 
           } catch (err) {
             registerMessage.textContent = 'Грешка при връзка със сървъра: ' + err.message;
             registerMessage.className = 'auth-message error';
           }
+        });
+      }
+
+      // ===== UPLOAD & DETECT =====
+      const uploadInput = document.getElementById('upload-file-input');
+      const uploadBtn = document.getElementById('upload-analyze-btn');
+      const uploadMessage = document.getElementById('upload-message');
+      const detectSummary = document.getElementById('detect-summary');
+      const detectRawJson = document.getElementById('detect-raw-json');
+
+      async function uploadAndDetect() {
+        if (!isLoggedIn) {
+          uploadMessage.textContent = 'Моля, първо се впиши или регистрирай.';
+          uploadMessage.className = 'auth-message error';
+          return;
+        }
+
+        if (!uploadInput || !uploadInput.files || uploadInput.files.length === 0) {
+          uploadMessage.textContent = 'Моля, избери файл.';
+          uploadMessage.className = 'auth-message error';
+          return;
+        }
+
+        const file = uploadInput.files[0];
+
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+
+          uploadMessage.textContent = 'Качване...';
+          uploadMessage.className = 'auth-message';
+
+          const uploadRes = await fetch('http://localhost:8080/api/images/upload', {
+            method: 'POST',
+            body: formData
+          });
+
+          const uploadData = await uploadRes.json().catch(() => ({}));
+
+          if (!uploadRes.ok) {
+            uploadMessage.textContent = uploadData.error || 'Грешка при качване.';
+            uploadMessage.className = 'auth-message error';
+            return;
+          }
+
+          uploadMessage.textContent = uploadData.message || 'Файлът е качен.';
+          uploadMessage.className = 'auth-message success';
+
+          const fileName = uploadData.fileName;
+          if (!fileName) {
+            uploadMessage.textContent = 'Сървърът не върна fileName.';
+            uploadMessage.className = 'auth-message error';
+            return;
+          }
+
+          detectSummary.textContent = 'Анализ...';
+          detectRawJson.textContent = '';
+
+          const detectRes = await fetch(
+            'http://localhost:8080/api/face/detect-uploaded?fileName=' + encodeURIComponent(fileName),
+            { method: 'POST' }
+          );
+
+          const detectData = await detectRes.json().catch(() => ({}));
+
+          if (!detectRes.ok) {
+            detectSummary.textContent = 'Грешка при анализ: ' + (detectData || '');
+            return;
+          }
+
+          if (detectData.hasFace) {
+            const rect = detectData.faceRectangle || {};
+            detectSummary.textContent =
+              'Открито лице. Позиция: top=' + rect.top + ', left=' + rect.left +
+              ', width=' + rect.width + ', height=' + rect.height + '.';
+          } else {
+            detectSummary.textContent = detectData.message || 'Не е открито лице.';
+          }
+
+          detectRawJson.textContent = JSON.stringify(detectData, null, 2);
+
+        } catch (err) {
+          uploadMessage.textContent = 'Грешка: ' + err.message;
+          uploadMessage.className = 'auth-message error';
+        }
+      }
+
+      if (uploadBtn) {
+        uploadBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          uploadAndDetect();
         });
       }
     });
