@@ -6,8 +6,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>website</title>
   </head>
+  
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <div id="login-container" style="border: 1px solid #ccc; padding: 16px; max-width: 300px; margin: 16px;">
+  <h2>Login</h2>
+  <form id="login-form">
+    <div style="margin-bottom: 8px;">
+      <label for="login-username">Username:</label><br />
+      <input type="text" id="login-username" name="username" required />
+    </div>
+    <div style="margin-bottom: 8px;">
+      <label for="login-password">Password:</label><br />
+      <input type="password" id="login-password" name="password" required />
+    </div>
+    <button type="submit">Login</button>
+  </form>
+  <p id="login-message" style="margin-top: 10px; color: #333;"></p>
+</div>
+<script>
+  // Функция за обработка на login формата
+  document.addEventListener('DOMContentLoaded', function () {
+    const loginForm = document.getElementById('login-form');
+    const loginMessage = document.getElementById('login-message');
+
+    if (!loginForm) {
+      return;
+    }
+
+    loginForm.addEventListener('submit', async function (e) {
+      e.preventDefault(); // спираме стандартното изпращане на формата
+
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+
+      if (!username || !password) {
+        loginMessage.textContent = 'Моля, въведи име и парола.';
+        loginMessage.style.color = 'red';
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:8080/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          // грешка при login (напр. 401)
+          loginMessage.textContent = data.error || 'Грешно потребителско име или парола.';
+          loginMessage.style.color = 'red';
+          return;
+        }
+
+        // успешен login
+        loginMessage.textContent = data.message || 'Успешен вход.';
+        loginMessage.style.color = 'green';
+
+        // по желание – пазим потребителя в localStorage
+        // localStorage.setItem('user', JSON.stringify(data));
+
+      } catch (err) {
+        loginMessage.textContent = 'Грешка при връзка със сървъра: ' + err.message;
+        loginMessage.style.color = 'red';
+      }
+    });
+  });
+</script>
+</body>
 </html>
